@@ -1,0 +1,102 @@
+*{
+ font-family: system-ui;
+}
+
+table{
+ border-collapse: collapse;
+ border: 1px solid #ededed;
+}
+
+tbody tr {
+ height: 40px;
+ border-bottom: 1px solid #ededed;
+ background-color: #fbfbfb;
+ text-align: center;
+}
+
+.title {
+ background-color: #009688;
+ height: 30px;
+ color: #fff;
+ font-size: 26px;
+}
+
+.size{
+ width:10%;
+}
+
+/* public/stylesheets/styles.css */
+img {
+width: 300px;
+}
+
+td{
+width: 413.2px;
+height: 439px;
+}
+
+.culture{
+height: 250px;
+}
+
+/* style.css */
+h1 {
+    color: green;
+}
+
+h3 {
+    color: rgb(129, 25, 25);
+    font: 25px;
+    font-weight: 700;
+}
+
+.mybox1 {
+    display: none;
+}
+
+.mybox2 {
+    display: none;
+}
+
+button {
+    padding: 10px;
+    font-size: 20px;
+    font-weight: 700;
+    color: rgb(5, 14, 5);
+    border: none;
+    border-radius: 30px;
+    background-color: rgb(182, 215, 182);
+    margin-top: 20px;
+}
+
+div,
+span {
+    font-size: 20px;
+}
+
+/* input name */
+
+.form-row {
+    display: flex; /* Usa flexbox para alinhar os elementos */
+    align-items: center; /* Alinha verticalmente ao centro */
+    margin-bottom: 10px;
+}
+
+.input-field {
+    padding: 8px;
+    width: 150px; /* Largura desejada para o input */
+    margin-right: 10px; /* Espaçamento entre o input e o botão */
+    border: 1px solid #ccc; /* Estilo da borda opcional */
+    border-radius: 4px; /* Borda arredondada opcional */
+}
+
+.submit-button {
+    padding: 8px 16px; /* Preenchimento interno do botão */
+    cursor: pointer;
+    margin-top: -2px;
+}
+
+label {
+    margin-right: 10px; /* Espaçamento entre a label e o input */
+}
+

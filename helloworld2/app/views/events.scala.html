@@ -1,0 +1,120 @@
+@(nameForm: Form[models.UserName], message: String, users: List[models.UserName])
+
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notícias</title>
+    <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/style.css")">
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+</head>
+<body>
+
+<!-- Tabela com informações sobre Música, Eventos culturais e Cinema -->
+<table>
+    <tr>
+        <th>Música</th>
+        <th>Eventos culturais</th>
+        <th>Cinema</th>
+    </tr>
+    <tr>
+        <!-- Informações sobre Música -->
+        <td>
+            <div class="mybox">
+                <div>
+                    <!-- Imagem e informações do festival -->
+                    <img src="@routes.Assets.versioned("images/noticia-de-festival.jpg")" alt="Notícia de festival"> <br>
+                    Data de Início: 28 Agosto 2024 <br>
+                    Data de fim: 31 Agosto 2024<span id="span1">...</span>
+                    <span class="mybox1" id="mybox1id">
+                        Com um percurso firmado no roteiro nacional dos Festivais de Verão, o Festival do Crato está de regresso para mais uma edição a não perder! <br>
+                        Este evento, que em agosto anima a vila do Crato no Alentejo, é conhecido por apostar em cartazes que integram alguns dos melhores projetos da música nacional e internacional. Depois dos concertos, a música continua com a atuação de diversos DJs. <br>
+                        Paralelamente decorre a Feira de Artesanato e Gastronomia, uma mostra das artes e dos sabores tradicionais, com destaque para o que se produz nesta região. <br>
+                        Para que não haja dificuldades de alojamento a organização disponibiliza uma zona de Campismo gratuito acessível com acesso garantido pelo passe de 4 dias.
+                    </span>
+                </div>
+                <button id="mybuttonid">Ler mais</button>
+            </div>
+        </td>
+        <!-- Informações sobre Eventos culturais -->
+        <td>
+            <div class="mybox">
+                <div>
+                    <!-- Imagem e informações sobre eventos culturais -->
+                    <img class="culture" src="@routes.Assets.versioned("images/escultores.jpeg")" alt="Notícia Culturais">
+                    <br>
+                    Dias 7, 14, 21 e 28 de Julho<span id="span2">...</span>
+                    <span class="mybox2" id="mybox2id">
+                        No mês de Julho, aos domingos, os contos invadem os jardins do Lumiar! Uma programação d’A Algures em co-produção com a Junta de Freguesia do Lumiar e o apoio da Câmara Municipal de Lisboa que procura habitar os jardins de palavras e convidar todas as pessoas a trazer uma manta, pôr os pés na relva e escutar histórias. <br>
+                        7-jul > 11:00 > Bru Junça > Cantos, Contos e Recontos > Alameda Roentgen <br>
+                        14-jul > 11:00 > Nuno Cintrão > O canto dos pássaros > Museu do Teatro e da Dança <br>
+                        21-jul > 11:00 > Cristina Taquelim > Histórias que cabem no ouvido > Jardim Professor Francisco Caldeira Cabral  <br>
+                        28-jul > 11:00 > Maria João Miguel > O voo das palavras > Quinta das Conchas <br>
+                        28-jul > 17:00 > Paula Cusati > Piquenique de livros > Quinta das Conchas <br>
+                        28-jul > 18:00 > Ana Lage > Rodas cantadas > Quinta das Conchas <br>
+                        <br>
+                        A programação é toda gratuita, de entrada livre e aberta a todos!
+                    </span>
+                </div>
+                <button id="mybuttonid2">Ler mais</button>
+            </div>
+        </td>
+        <!-- Informações sobre Cinema -->
+        <td>
+            <div>
+                <img src="@routes.Assets.versioned("images/cinema.jpg")" alt="Cinema">
+            </div>
+            <p>
+                Estreia: 04-07-2024
+            </p>
+        </td>
+    </tr>
+</table>
+
+<!-- Exibir mensagem de sucesso ou erro -->
+@if(message != null && !message.isEmpty()) {
+<div class="alert alert-success">
+    <p>@message</p>
+</div>
+}
+
+<!-- Exibir mensagens de erro de validação -->
+@if(nameForm.hasErrors()) {
+<div class="alert alert-danger">
+    <p><strong>O formulário contém erros:</strong></p>
+    <ul>
+        @for((key, errors) <- nameForm.errors()) {
+        @for(error <- errors) {
+        <li>@error.message</li> <!-- Aqui exibimos a mensagem de erro -->
+        }
+        }
+    </ul>
+</div>
+}
+
+@helper.form(routes.HomeController.submit()) {
+<form method="post" action="@routes.HomeController.submit()">
+    <div class="form-row">
+        <label for="nameInput">Nome:</label>
+        <input type="text" name="name" id="nameInput" class="input-field" placeholder="Digite seu nome...">
+        <button type="submit">Enviar</button>
+    </div>
+</form>
+}
+
+<!-- Listar utilizadores existentes -->
+<h2>Lista de Usuários</h2>
+@if(users != null && !users.isEmpty()) {
+<ul>
+    @for(user <- users) {
+    <li>@user.getName()</li>
+    }
+</ul>
+} else {
+<p>Nenhum utilizador encontrado.</p>
+}
+
+</body>
+</html>
