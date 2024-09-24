@@ -20,26 +20,16 @@ jobs:
       - name: Set up JDK
         uses: actions/setup-java@v1
         with:
-          java-version: '8'  # Mantenha a versão que você estiver usando
+          java-version: '8'  # ou a versão que você estiver usando
 
       - name: Build with sbt
-        env:
-          MY_USERNAME: ${{ secrets.MY_USERNAME }}  # Mantendo os seus secrets
-          MY_PASSWORD: ${{ secrets.MY_PASSWORD }}
-        run: sbt clean universal:stage  # Certifique-se de que isso gera os arquivos esperados
+        run: sbt clean compile package  # Este comando gera o arquivo compilado
 
       - name: List target directory
-        run: ls -R target  # Liste a estrutura de diretórios para verificar os arquivos gerados
+        run: ls -R target  # Verifique o conteúdo da pasta target para inspecionar onde os artefatos estão
 
       - name: Upload compiled files
         uses: actions/upload-artifact@v3
         with:
           name: compiled-files
-          path: target/universal/stage  # Caminho onde os arquivos são gerados
-
-      - name: Build Docker image
-        run: |
-          docker build -t my-app-image .  # Construindo a imagem Docker
-        env:
-          MY_USERNAME: ${{ secrets.MY_USERNAME }}  # Usando os secrets no contexto do Docker, se necessário
-          MY_PASSWORD: ${{ secrets.MY_PASSWORD }}
+          path: target/scala-*/  # Verifique o caminho correto dos arquivos gerados
