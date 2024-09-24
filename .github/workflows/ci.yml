@@ -29,15 +29,10 @@ jobs:
         run: sbt clean compile
 
       - name: Upload compiled files
-        uses: actions/upload-artifact@v3  # Atualizado para v3
+        uses: actions/upload-artifact@v3
         with:
           name: compiled-files
-          path: target/universal/stage  # Ajuste este caminho para onde os arquivos compilados estão
-
-      - name: Download compiled files
-        uses: actions/download-artifact@v3  # Atualizado para v3
-        with:
-          name: compiled-files
+          path: target/universal/stage  # Verifique se este caminho é onde os arquivos são gerados
 
       - name: Build Docker image
         run: |
