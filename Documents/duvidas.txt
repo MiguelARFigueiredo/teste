@@ -1,0 +1,6 @@
+Wildsmile_frontend -> trunk-> app -> views -> pages -> partners -> become_a_partner.sacala.html
+
+
+@for(b <- benefits){
+
+Wildsmile_portal -> 20170808_tabela_dinamica -> app -> models -> Cartao -> Ebean
