@@ -1,0 +1,31 @@
+version: '3.8'
+services:
+  db:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: 1234
+      MYSQL_DATABASE: playdb
+    ports:
+      - "3307:3306"
+    networks:
+      - play-network
+
+  play-app:
+    image: play-java-app
+    build: .
+    ports:
+      - "9000:9000"
+    environment:
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_NAME: playdb
+      DB_USER: root
+      DB_PASSWORD: 1234
+    depends_on:
+      - db
+    networks:
+      - play-network
+
+networks:
+  play-network:
+    driver: bridge

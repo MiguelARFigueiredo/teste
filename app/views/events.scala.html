@@ -145,72 +145,35 @@
 </div>
 }
 
-<a href="@routes.HomeController.startGetCorrectRevenueProcess()" class="btn btn-primary">Iniciar Processo de Receitas</a>
+<!-- Exibe o nome do usuário inserido -->
+@if(users != null && !users.isEmpty()) {
+<div class="alert alert-info">
+    <p>Nome inserido: @users.head.getName()</p>
+</div>
+}
 
+<!-- Formulário para iniciar o processo de obtenção de receitas -->
+@helper.form(routes.HomeController.startGetCorrectRevenueProcess()) {
+<div class="form-row">
+    <label for="startDateInput">Data de Início:</label>
+    <input type="date" name="startDate" id="startDateInput" class="input-field" placeholder="Digite a data de início...">
+
+    <label for="endDateInput">Data de Fim:</label>
+    <input type="date" name="endDate" id="endDateInput" class="input-field" placeholder="Digite a data de fim...">
+
+    <button type="submit">Iniciar Processo de Receitas</button>
+</div>
+}
 
 @helper.form(routes.HomeController.submit()) {
-<form method="post" action="@routes.HomeController.submit()">
-    <div class="form-row">
-        <label for="nameInput">Nome:</label>
-        <input type="text" name="name" id="nameInput" class="input-field" placeholder="Digite seu nome...">
+<div class="form-row">
+    <form method="post" action="@routes.HomeController.submit()">
+        @helper.inputText(nameForm("name"))
         <button type="submit">Enviar</button>
-    </div>
-</form>
+    </form>
+</div>
 }
 
-<h2>Lista de Utilizadores</h2>
-@if(users != null && !users.isEmpty()) {
-<ul>
-    @for(user <- users) {
-    <li>@user.getName()</li>
-    }
-</ul>
-} else {
-<p>Nenhum utilizador encontrado.</p>
-}
-
-<script src="@routes.Assets.versioned("javascripts/jquery-3.3.1.min.js")"></script>
-<script src="@routes.Assets.versioned("javascripts/jquery.sticky.js")"></script>
-<script src="@routes.Assets.versioned("javascripts/popper.min.js")"></script>
-<script src="@routes.Assets.versioned("javascripts/bootstrap.min.js")"></script>
 <script src="@routes.Assets.versioned("javascripts/main.js")"></script>
-
-
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Função para buscar na tabela
-        document.getElementById('searchInput').addEventListener('keyup', function() {
-            var input, filter, table, tr, th, i, txtValue;
-            input = document.getElementById('searchInput');
-            filter = input.value.toLowerCase();
-            table = document.getElementById('infoTable');
-            tr = table.getElementsByTagName('tr');
-
-            // Iterar sobre todas as linhas da tabela
-            for (i = 0; i < tr.length; i++) {
-                th = tr[i].getElementsByTagName('th');
-
-                // Verificar cada cabeçalho (th) na linha (tr)
-                for (var j = 0; j < th.length; j++) {
-                    txtValue = th[j].textContent || th[j].innerText;
-
-                    // Verificar se o texto do cabeçalho corresponde ao filtro
-                    if (txtValue.toLowerCase().indexOf(filter) > -1) {
-                        tr[i].style.display = ''; // Mostrar a linha
-                        break; // Sair do loop ao encontrar uma correspondência
-                    } else {
-                        tr[i].style.display = 'none'; // Ocultar a linha se não houver correspondência
-                    }
-                }
-            }
-        });
-    });
-
-
-
-
-</script>
-
-@footer()
 </body>
 </html>

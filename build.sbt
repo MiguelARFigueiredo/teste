@@ -24,3 +24,4 @@ javaOptions in run += {
     .data.getAbsolutePath
   s"-javaagent:$agentJar"
 }
+

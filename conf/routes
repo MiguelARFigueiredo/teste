@@ -11,7 +11,7 @@ GET     /wildsmile/user/miguel controllers.HomeController.wildsmile
 GET     /events               controllers.HomeController.events
 POST    /                     controllers.HomeController.submit()
 GET     /index                controllers.HomeController.indexv2
-GET     /startRevenueProcess      controllers.HomeController.startGetCorrectRevenueProcess()
+POST    /startRevenueProcess  controllers.HomeController.startGetCorrectRevenueProcess()
 
 
 # Map static resources from the /public folder to the /assets URL path

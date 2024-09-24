@@ -1,5 +1,9 @@
+// HomeController
+
 package controllers;
 
+import views.html.events;
+import models.RevenueDates;
 import models.UserName;
 import play.mvc.*;
 import play.data.Form;
@@ -12,6 +16,7 @@ import java.io.IOException;
 
 // Importe a classe PaymentReport aqui
 import models.PaymentReport;
+import java.util.Arrays;
 
 public class HomeController extends Controller {
 
@@ -112,8 +117,8 @@ public class HomeController extends Controller {
             // Define uma mensagem de sucesso na flash scope
             flash("success", "Nome enviado com sucesso!");
 
-            // Redireciona de volta para a página inicial
-            return redirect(routes.HomeController.index());
+            // Passa o nome do usuário inserido de volta para a página de eventos
+            return ok(views.html.events.render(formFactory.form(UserName.class), "Nome enviado com sucesso!", Arrays.asList(formData)));
         }
     }
 
@@ -124,19 +129,26 @@ public class HomeController extends Controller {
      * da classe PaymentReport com as datas específicas para a consulta.
      */
     public Result startGetCorrectRevenueProcess() {
-        try {
-            // Datas para consulta
-            LocalDate endDate = LocalDate.now();
-            LocalDate startDate = endDate.minusMonths(1); // Um mês atrás da data atual
+        Http.Context ctx = Http.Context.current();
+        Http.Request request = ctx.request();
 
-            // Chama o método existente da classe PaymentReport
+        Form<RevenueDates> revenueForm = formFactory.form(RevenueDates.class).bindFromRequest(request);
+        if (revenueForm.hasErrors()) {
+            return badRequest("Erro ao processar as datas fornecidas.");
+        } else {
+            RevenueDates dates = revenueForm.get();
+            String startDateString = dates.getStartDate();
+            String endDateString = dates.getEndDate();
+
+            // Converte as strings de data para LocalDate
+            LocalDate startDate = LocalDate.parse(startDateString);
+            LocalDate endDate = LocalDate.parse(endDateString);
+
+            // Chama o método da classe PaymentReport para iniciar o processo de obtenção de receitas
             PaymentReport.getCorrectRevenuefromEasypay(startDate, endDate);
 
-            // Retorne um resultado OK ou qualquer outra ação que você deseje
-            return ok("Processo de obtenção de receitas iniciado com sucesso!");
-        } catch (Exception e) {
-            // Em caso de erro, você pode retornar um resultado de erro
-            return internalServerError("Erro ao iniciar o processo de obtenção de receitas: " + e.getMessage());
+            // Retorna uma mensagem de sucesso para o usuário (ou uma página de confirmação)
+            return ok(events.render(formFactory.form(UserName.class), "Processo de obtenção de receitas iniciado para o período de " + startDate + " a " + endDate, null));
         }
     }
 }
