@@ -20,7 +20,7 @@ jobs:
       - name: Set up JDK
         uses: actions/setup-java@v1
         with:
-          java-version: '8'  # ou a versão que você estiver usando 
+          java-version: '8'  # ou a versão que você estiver usando
 
       - name: Build with sbt
         env:
@@ -29,7 +29,19 @@ jobs:
         run: sbt clean compile
 
       - name: Upload compiled files
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3  # Atualizado para v3
         with:
           name: compiled-files
           path: target/universal/stage  # Ajuste este caminho para onde os arquivos compilados estão
+
+      - name: Download compiled files
+        uses: actions/download-artifact@v3  # Atualizado para v3
+        with:
+          name: compiled-files
+
+      - name: Build Docker image
+        run: |
+          docker build -t my-app-image .
+        env:
+          MY_USERNAME: ${{ secrets.MY_USERNAME }}
+          MY_PASSWORD: ${{ secrets.MY_PASSWORD }}
