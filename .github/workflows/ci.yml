@@ -35,9 +35,17 @@ jobs:
           docker run --name mysql-container --network my-network -e MYSQL_ROOT_PASSWORD=${{ secrets.MY_PASSWORD }} \
             -e MYSQL_DATABASE=playdb -d -p 3306:3306 mysql:8.0.28
 
-      # Aguardar o MySQL inicializar
-      - name: Wait for MySQL to start
-        run: sleep 30
+      # Aguardar o MySQL inicializar (tentativa de conexão até 60 segundos)
+      - name: Wait for MySQL to be ready
+        run: |
+          for i in {1..60}; do
+            if docker exec mysql-container mysql -u root -p${{ secrets.MY_PASSWORD }} -e "SELECT 1" > /dev/null 2>&1; then
+              echo "MySQL is ready!"
+              break
+            fi
+            echo "Waiting for MySQL..."
+            sleep 1
+          done
 
       # Build da imagem Docker
       - name: Build Docker image
