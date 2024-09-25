@@ -43,6 +43,16 @@ jobs:
         run: |
           docker tag my-app-image ghcr.io/miguelarfigueiredo/teste/my-app-image:latest
 
+      # Autenticar no GitHub Container Registry
+      - name: Log in to GitHub Container Registry
+        run: |
+          echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      # Push da imagem Docker
+      - name: Push Docker image
+        run: |
+          docker push ghcr.io/miguelarfigueiredo/teste/my-app-image:latest
+
       # (Opcional) Executar o container da aplicação
       - name: Run Docker container
         run: |
