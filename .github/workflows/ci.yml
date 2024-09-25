@@ -56,8 +56,8 @@ jobs:
       # (Opcional) Executar o container da aplicação
       - name: Run Docker container
         run: |
-          docker run -d --env DB_DRIVER=${{ secrets.DB_DRIVER }} \
-                        --env DB_URL=${{ secrets.DB_URL }} \
+          docker run -d --env DB_DRIVER=com.mysql.cj.jdbc.Driver \
+                        --env DB_URL=jdbc:mysql://127.0.0.1:3306/playdb?useSSL=false \
                         --env MY_USERNAME=${{ secrets.MY_USERNAME }} \
                         --env MY_PASSWORD=${{ secrets.MY_PASSWORD }} \
                         my-app-image
