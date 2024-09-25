@@ -21,17 +21,23 @@ jobs:
       # Configurar variáveis de ambiente usando secrets do GitHub
       - name: Set environment variables
         run: |
-          echo "DB_DRIVER=com.mysql.cj.jdbc.Driver" >> $GITHUB_ENV
-          echo "DB_URL=jdbc:mysql://127.0.0.1:3306/playdb?useSSL=false" >> $GITHUB_ENV
           echo "MY_USERNAME=${{ secrets.MY_USERNAME }}" >> $GITHUB_ENV
           echo "MY_PASSWORD=${{ secrets.MY_PASSWORD }}" >> $GITHUB_ENV
-          echo "MYSQL_ROOT_PASSWORD=${{ secrets.MYSQL_ROOT_PASSWORD }}" >> $GITHUB_ENV
 
-      # Iniciar o contêiner MySQL
+      # Criar uma rede Docker
+      - name: Create Docker network
+        run: |
+          docker network create my-network
+
+      # Iniciar o contêiner MySQL com MY_PASSWORD como senha root
       - name: Start MySQL container
         run: |
-          docker run --name mysql-container -e MYSQL_ROOT_PASSWORD=${{ secrets.MYSQL_ROOT_PASSWORD }} \
+          docker run --name mysql-container --network my-network -e MYSQL_ROOT_PASSWORD=${{ secrets.MY_PASSWORD }} \
             -e MYSQL_DATABASE=playdb -d -p 3306:3306 mysql:8.0.28
+
+      # Aguardar o MySQL inicializar
+      - name: Wait for MySQL to start
+        run: sleep 30
 
       # Build da imagem Docker
       - name: Build Docker image
@@ -53,16 +59,16 @@ jobs:
         run: |
           docker push ghcr.io/miguelarfigueiredo/teste/my-app-image:latest
 
-      # (Opcional) Executar o container da aplicação
+      # Executar o container da aplicação com DB_DRIVER e DB_URL diretamente
       - name: Run Docker container
         run: |
-          docker run -d --env DB_DRIVER=com.mysql.cj.jdbc.Driver \
-                        --env DB_URL=jdbc:mysql://127.0.0.1:3306/playdb?useSSL=false \
+          docker run --network my-network -d --env DB_DRIVER=com.mysql.cj.jdbc.Driver \
+                        --env DB_URL=jdbc:mysql://mysql-container:3306/playdb?useSSL=false \
                         --env MY_USERNAME=${{ secrets.MY_USERNAME }} \
                         --env MY_PASSWORD=${{ secrets.MY_PASSWORD }} \
                         my-app-image
 
-      # (Opcional) Parar e remover o contêiner MySQL após os testes
+      # Parar e remover o contêiner MySQL após os testes
       - name: Clean up
         run: |
           if [ $(docker ps -q -f name=mysql-container) ]; then
