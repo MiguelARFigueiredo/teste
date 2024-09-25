@@ -53,7 +53,7 @@ jobs:
         run: |
           docker push ghcr.io/miguelarfigueiredo/teste/my-app-image:latest
 
-      # (Opcional) Executar o container da aplicação
+      # (Opcional) Executar o container da aplicaçãoo
       - name: Run Docker container
         run: |
           docker run -d --env DB_DRIVER=com.mysql.cj.jdbc.Driver \
