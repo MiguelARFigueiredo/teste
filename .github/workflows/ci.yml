@@ -14,22 +14,24 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # Checkout do código
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Set up JDK
-        uses: actions/setup-java@v1
-        with:
-          java-version: '8'  # ou a versão que você estiver usando
+      # Configurar variáveis de ambiente usando secrets do GitHub
+      - name: Set environment variables
+        run: |
+          echo "DB_DRIVER=com.mysql.cj.jdbc.Driver" >> $GITHUB_ENV
+          echo "DB_URL=jdbc:mysql://127.0.0.1:3306/playdb?useSSL=false" >> $GITHUB_ENV
+          echo "MY_USERNAME=${{ secrets.MY_USERNAME }}" >> $GITHUB_ENV
+          echo "MY_PASSWORD=${{ secrets.MY_PASSWORD }}" >> $GITHUB_ENV
 
-      - name: Build with sbt
-        run: sbt clean compile package  # Este comando gera o arquivo compilado
+      # Fazer build da imagem Docker com as variáveis de ambiente
+      - name: Build Docker image
+        run: |
+          docker build -t my-app-image .
 
-      - name: List target directory
-        run: ls -R target  # Verifique o conteúdo da pasta target para inspecionar onde os artefatos estão
-
-      - name: Upload compiled files
-        uses: actions/upload-artifact@v3
-        with:
-          name: compiled-files
-          path: target/scala-*/  # Verifique o caminho correto dos arquivos gerados
+      # Testar a aplicação rodando o container com variáveis de ambiente
+      - name: Run Docker container
+        run: |
+          docker run -e DB_DRIVER=$DB_DRIVER -e DB_URL=$DB_URL -e MY_USERNAME=$MY_USERNAME -e MY_PASSWORD=$MY_PASSWORD my-app-image
