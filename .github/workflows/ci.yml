@@ -27,6 +27,12 @@ jobs:
           echo "MY_PASSWORD=${{ secrets.MY_PASSWORD }}" >> $GITHUB_ENV
           echo "MYSQL_ROOT_PASSWORD=${{ secrets.MYSQL_ROOT_PASSWORD }}" >> $GITHUB_ENV
 
+      # Iniciar o contêiner MySQL
+      - name: Start MySQL container
+        run: |
+          docker run --name mysql-container -e MYSQL_ROOT_PASSWORD=${{ secrets.MYSQL_ROOT_PASSWORD }} \
+            -e MYSQL_DATABASE=playdb -d -p 3306:3306 mysql:8.0.28
+
       # Build da imagem Docker
       - name: Build Docker image
         run: |
@@ -49,5 +55,7 @@ jobs:
       # (Opcional) Parar e remover o contêiner MySQL após os testes
       - name: Clean up
         run: |
-          docker stop mysql-container
-          docker rm mysql-container
+          if [ $(docker ps -q -f name=mysql-container) ]; then
+            docker stop mysql-container
+            docker rm mysql-container
+          fi
