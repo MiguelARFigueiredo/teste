@@ -36,14 +36,19 @@ jobs:
         run: |
           docker build -t my-app-image .
 
-      # (Opcional) Executar o container da aplicação
-      - name: Run Docker container
+      # Fazer login no GitHub Container Registry
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # Enviar a imagem para o GitHub Container Registry
+      - name: Push Docker image
         run: |
-          docker run -d --env DB_DRIVER=com.mysql.cj.jdbc.Driver \
-                        --env DB_URL=jdbc:mysql://mysql-container:3306/playdb?useSSL=false \
-                        --env MY_USERNAME=${{ secrets.MY_USERNAME }} \
-                        --env MY_PASSWORD=${{ secrets.MY_PASSWORD }} \
-                        my-app-image
+          docker tag my-app-image ghcr.io/${{ github.repository }}/my-app-image:latest
+          docker push ghcr.io/${{ github.repository }}/my-app-image:latest
 
       # (Opcional) Parar e remover o contêiner MySQL após os testes
       - name: Clean up
