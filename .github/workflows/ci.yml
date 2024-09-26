@@ -41,7 +41,7 @@ jobs:
       # Executar o contêiner do MySQL
       - name: Run MySQL container
         run: |
-          docker run --name mysql-container -e MYSQL_ROOT_PASSWORD=1234 -e MYSQL_DATABASE=playdb -p 3306:3306 -d mysql:latest
+          docker run --name mysql-container -e MYSQL_ROOT_PASSWORD=1234 -e MYSQL_DATABASE=playdb -p 3307:3306 -d mysql:latest
 
       # Executar o contêiner da aplicação
       - name: Run Docker container
