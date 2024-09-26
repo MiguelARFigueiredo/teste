@@ -38,23 +38,29 @@ jobs:
         run: |
           docker push ghcr.io/miguelarfigueiredo/teste/my-app-image:latest
 
-      # Executar o container da aplicação (conectando ao MySQL)
+      # Executar o contêiner do MySQL
+      - name: Run MySQL container
+        run: |
+          docker run --name mysql-container -e MYSQL_ROOT_PASSWORD=1234 -e MYSQL_DATABASE=playdb -p 3306:3306 -d mysql:latest
+
+      # Executar o contêiner da aplicação
       - name: Run Docker container
         run: |
           docker run -d --name app-container --env DB_DRIVER=com.mysql.cj.jdbc.Driver \
-                        --env DB_URL=jdbc:mysql://127.0.0.1:3306/playdb?useSSL=false \
+                        --env DB_URL=jdbc:mysql://mysql-container:3306/playdb?useSSL=false \
                         --env DB_USERNAME=root \
                         --env DB_PASSWORD=1234 \
                         my-app-image
 
-      # Aguardar a aplicação iniciar e verificar conexão com o banco de dados
+      # Aguardar a aplicação iniciar e verificar a conexão com o banco de dados
       - name: Wait for application and check DB connection
         run: |
           for i in {1..60}; do
-            if docker exec app-container sh -c 'mysql -h 127.0.0.1 -u root -p"1234" -e "SELECT 1"' > /dev/null 2>&1; then
+            if docker exec app-container sh -c 'mysql -h mysql-container -u root -p"1234" -e "SELECT 1"' > /dev/null 2>&1; then
               echo "Database connected successfully!"
               break
             fi
             echo "Waiting for database connection..."
             sleep 1
           done
+    
