@@ -24,38 +24,6 @@ jobs:
           echo "MY_USERNAME=${{ secrets.MY_USERNAME }}" >> $GITHUB_ENV
           echo "MY_PASSWORD=${{ secrets.MY_PASSWORD }}" >> $GITHUB_ENV
 
-      # Criar uma rede Docker
-      - name: Create Docker network
-        run: |
-          docker network create my-network || echo "Network already exists"
-
-      # Iniciar o contêiner MySQL com MY_PASSWORD como senha root
-      - name: Start MySQL container
-        run: |
-          docker run --name mysql-container --network my-network -e MYSQL_ROOT_PASSWORD=${{ secrets.MY_PASSWORD }} \
-            -e MYSQL_DATABASE=playdb -d -p 3307:3306 mysql:8.0.28
-
-      # Verificar se o contêiner MySQL foi criado
-      - name: Check MySQL container
-        run: |
-          if [ $(docker ps -q -f name=mysql-container) ]; then
-            echo "MySQL container is running."
-          else
-            echo "MySQL container is not running." && exit 1
-          fi
-
-      # Aguardar o MySQL inicializar (tentativa de conexão até 60 segundos)
-      - name: Wait for MySQL to be ready
-        run: |
-          for i in {1..60}; do
-            if docker exec mysql-container mysql -u root -p${{ secrets.MY_PASSWORD }} -e "SELECT 1" > /dev/null 2>&1; then
-              echo "MySQL is ready!"
-              break
-            fi
-            echo "Waiting for MySQL..."
-            sleep 1
-          done
-
       # Build da imagem Docker
       - name: Build Docker image
         run: |
@@ -76,11 +44,11 @@ jobs:
         run: |
           docker push ghcr.io/miguelarfigueiredo/teste/my-app-image:latest
 
-      # Executar o container da aplicação com DB_DRIVER e DB_URL diretamente
+      # Executar o container da aplicação (conectando ao MySQL local)
       - name: Run Docker container
         run: |
-          docker run --network my-network -d --name app-container --env DB_DRIVER=com.mysql.cj.jdbc.Driver \
-                        --env DB_URL=jdbc:mysql://mysql-container:3306/playdb?useSSL=false \
+          docker run -d --name app-container --env DB_DRIVER=com.mysql.cj.jdbc.Driver \
+                        --env DB_URL=jdbc:mysql://127.0.0.1:3306/playdb?useSSL=false \
                         --env DB_USERNAME=${{ secrets.MY_USERNAME }} \
                         --env DB_PASSWORD=${{ secrets.MY_PASSWORD }} \
                         my-app-image
@@ -89,25 +57,10 @@ jobs:
       - name: Wait for application and check DB connection
         run: |
           for i in {1..60}; do
-            if docker exec app-container sh -c 'mysql -h mysql-container -u root -p"${MY_PASSWORD}" -e "SELECT 1"' > /dev/null 2>&1; then
+            if docker exec app-container sh -c 'mysql -h 127.0.0.1 -u $MY_USERNAME -p"${MY_PASSWORD}" -e "SELECT 1"' > /dev/null 2>&1; then
               echo "Database connected successfully!"
               break
             fi
             echo "Waiting for database connection..."
             sleep 1
           done
-
-      # Parar e remover o contêiner MySQL após os testes
-      - name: Clean up
-        run: |
-          if [ $(docker ps -q -f name=mysql-container) ]; then
-            docker stop mysql-container
-            docker rm mysql-container
-          fi
-          # Remover o contêiner da aplicação
-          if [ $(docker ps -q -f name=app-container) ]; then
-            docker stop app-container
-            docker rm app-container
-          fi
-          # Remover a rede Docker
-          docker network rm my-network || echo "Network does not exist"
