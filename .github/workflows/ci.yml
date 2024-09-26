@@ -21,8 +21,8 @@ jobs:
       # Configurar variáveis de ambiente usando secrets do GitHub
       - name: Set environment variables
         run: |
-          echo "MY_USERNAME=${{ secrets.MY_USERNAME }}" >> $GITHUB_ENV
-          echo "MY_PASSWORD=${{ secrets.MY_PASSWORD }}" >> $GITHUB_ENV
+          echo "MY_USERNAME= root" >> $GITHUB_ENV
+          echo "MY_PASSWORD= 1234" >> $GITHUB_ENV
 
       # Build da imagem Docker
       - name: Build Docker image
@@ -49,8 +49,8 @@ jobs:
         run: |
           docker run -d --name app-container --env DB_DRIVER=com.mysql.cj.jdbc.Driver \
                         --env DB_URL=jdbc:mysql://host.docker.internal:3306/playdb?useSSL=false \
-                        --env DB_USERNAME=${{ secrets.MY_USERNAME }} \
-                        --env DB_PASSWORD=${{ secrets.MY_PASSWORD }} \
+                        --env DB_USERNAME=root \
+                        --env DB_PASSWORD=1234 \
                         my-app-image
 
       # Aguardar a aplicação iniciar e verificar conexão com o banco de dados
