@@ -40,10 +40,10 @@ ENV EXECUTABLE_DIR=/play-java-hello-world-tutorial-2.6.x/target/universal/stage/
 ENV EXECUTABLE_FILE=play-java-hello-world-tutorial-2-6-x
 
 # Defina as variáveis de ambiente para a conexão com o banco de dados
-# Não atribuir diretamente o MY_USERNAME e MY_PASSWORD aqui, pois eles serão passados em tempo de execução
 ENV DB_DRIVER=com.mysql.cj.jdbc.Driver
 ENV DB_URL="jdbc:mysql://127.0.0.1:3306/playdb?useSSL=false"
-# Não definir aqui, pois será passado via variáveis de ambiente na execução do contêiner
+ENV DB_USERNAME=${MY_USERNAME}
+ENV DB_PASSWORD=${MY_PASSWORD}
 
 # Comando para iniciar a aplicação e garantir a remoção do RUNNING_PID
 CMD ["sh", "-c", "rm -f /play-java-hello-world-tutorial-2.6.x/target/universal/stage/RUNNING_PID && $EXECUTABLE_DIR/$EXECUTABLE_FILE"]

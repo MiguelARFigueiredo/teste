@@ -33,7 +33,7 @@ jobs:
       - name: Start MySQL container
         run: |
           docker run --name mysql-container --network my-network -e MYSQL_ROOT_PASSWORD=${{ secrets.MY_PASSWORD }} \
-            -e MYSQL_DATABASE=playdb -d -p 3306:3306 mysql:8.0.28
+            -e MYSQL_DATABASE=playdb -d -p 3306:3307 mysql:8.0.28
 
       # Verificar se o contêiner MySQL foi criado
       - name: Check MySQL container
