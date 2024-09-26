@@ -82,8 +82,8 @@ jobs:
           docker run --network my-network -d --name app-container \
             --env DB_DRIVER=com.mysql.cj.jdbc.Driver \
             --env DB_URL=jdbc:mysql://mysql-container:3306/playdb?useSSL=false&allowPublicKeyRetrieval=true \
-            --env MY_USERNAME=${{ secrets.MY_USERNAME }} \
-            --env MY_PASSWORD=${{ secrets.MY_PASSWORD }} \
+            --env DB_USERNAME=${{ secrets.MY_USERNAME }} \
+            --env DB_PASSWORD=${{ secrets.MY_PASSWORD }} \
             my-app-image
 
       # Aguardar a aplicação iniciar e verificar conexão com o banco de dados
