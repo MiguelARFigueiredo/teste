@@ -24,38 +24,33 @@ jobs:
           echo "MY_USERNAME=${{ secrets.MY_USERNAME }}" >> $GITHUB_ENV
           echo "MY_PASSWORD=${{ secrets.MY_PASSWORD }}" >> $GITHUB_ENV
 
-      # Criar uma rede Docker
-      - name: Create Docker network
+      # Criar arquivo .env para Docker Compose
+      - name: Create .env file for Docker Compose
         run: |
-          docker network create my-network
+          echo "MY_USERNAME=${{ secrets.MY_USERNAME }}" >> .env
+          echo "MY_PASSWORD=${{ secrets.MY_PASSWORD }}" >> .env
 
-      # Iniciar o contêiner MySQL com MY_PASSWORD como senha root
-      - name: Start MySQL container
-        run: |
-          docker run --name mysql-container --network my-network -e MYSQL_ROOT_PASSWORD=${{ secrets.MY_PASSWORD }} \
-            -e MYSQL_DATABASE=playdb -d -p 3306:3306 mysql:8.0.28
+      # Criar uma rede Docker (não necessário com Docker Compose)
+      # - name: Create Docker network
+      #   run: |
+      #     docker network create my-network
 
-      # Aguardar o MySQL inicializar (tentativa de conexão até 60 segundos)
-      - name: Wait for MySQL to be ready
+      # Build da imagem Docker com Docker Compose
+      - name: Build and start services with Docker Compose
         run: |
-          for i in {1..60}; do
-            if docker exec mysql-container mysql -u root -p${{ secrets.MY_PASSWORD }} -e "SELECT 1" > /dev/null 2>&1; then
-              echo "MySQL is ready!"
-              break
-            fi
-            echo "Waiting for MySQL..."
-            sleep 1
-          done
+          docker-compose up -d --build
 
-      # Build da imagem Docker
-      - name: Build Docker image
-        run: |
-          docker build -t my-app-image .
-
-      # Tag da imagem Docker
-      - name: Tag Docker image
-        run: |
-          docker tag my-app-image ghcr.io/miguelarfigueiredo/teste/my-app-image:latest
+      # Aguardar o MySQL inicializar (docker-compose já gerencia isso com depends_on)
+      # - name: Wait for MySQL to be ready
+      #   run: |
+      #     for i in {1..60}; do
+      #       if docker exec mysql-container mysql -u root -p${{ secrets.MY_PASSWORD }} -e "SELECT 1" > /dev/null 2>&1; then
+      #         echo "MySQL is ready!"
+      #         break
+      #       fi
+      #       echo "Waiting for MySQL..."
+      #       sleep 1
+      #     done
 
       # Autenticar no GitHub Container Registry
       - name: Log in to GitHub Container Registry
@@ -65,21 +60,9 @@ jobs:
       # Push da imagem Docker
       - name: Push Docker image
         run: |
-          docker push ghcr.io/miguelarfigueiredo/teste/my-app-image:latest
+          docker-compose push
 
-      # Executar o container da aplicação com DB_DRIVER e DB_URL diretamente
-      - name: Run Docker container
+      # Parar e remover o contêiner MySQL e aplicação após os testes
+      - name: Stop and clean up containers
         run: |
-          docker run --network my-network -d --env DB_DRIVER=com.mysql.cj.jdbc.Driver \
-                        --env DB_URL=jdbc:mysql://127.0.0.1:3306/playdb?useSSL=false \
-                        --env MY_USERNAME=${{ secrets.MY_USERNAME }} \
-                        --env MY_PASSWORD=${{ secrets.MY_PASSWORD }} \
-                        my-app-image
-
-      # Parar e remover o contêiner MySQL após os testes
-      - name: Clean up
-        run: |
-          if [ $(docker ps -q -f name=mysql-container) ]; then
-            docker stop mysql-container
-            docker rm mysql-container
-          fi
+          docker-compose down
