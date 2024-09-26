@@ -52,6 +52,18 @@ jobs:
                         --env DB_PASSWORD=1234 \
                         my-app-image
 
+      # Aguardar a inicialização do MySQL
+      - name: Wait for MySQL to be ready
+        run: |
+          for i in {1..60}; do
+            if docker exec mysql-container sh -c 'mysql -u root -p"1234" -e "SELECT 1"' > /dev/null 2>&1; then
+              echo "MySQL is ready!"
+              break
+            fi
+            echo "Waiting for MySQL..."
+            sleep 1
+          done
+
       # Aguardar a aplicação iniciar e verificar a conexão com o banco de dados
       - name: Wait for application and check DB connection
         run: |
@@ -63,4 +75,3 @@ jobs:
             echo "Waiting for database connection..."
             sleep 1
           done
-    
