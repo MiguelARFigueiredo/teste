@@ -38,29 +38,20 @@ jobs:
         run: |
           docker push ghcr.io/miguelarfigueiredo/teste/my-app-image:latest
 
-      # Executar o contêiner do MySQL
+      # Criar uma rede do Docker
+      - name: Create Docker network
+        run: |
+          docker network create my-network || echo "Network already exists"
+
+      # Executar o contêiner do MySQL na rede criada
       - name: Run MySQL container
         run: |
-          docker run --name mysql-container -e MYSQL_ROOT_PASSWORD=1234 -e MYSQL_DATABASE=playdb -p 3307:3306 -d mysql:latest
-
-      # Testar conexão MySQL
-      - name: Test MySQL connection
-        run: |
-          docker exec mysql-container sh -c 'mysql -u root -p"1234" -e "SELECT 1"'
-
-      # Executar o contêiner da aplicação
-      - name: Run Docker container
-        run: |
-          docker run -d --name app-container --env DB_DRIVER=com.mysql.cj.jdbc.Driver \
-                        --env DB_URL=jdbc:mysql://mysql-container:3306/playdb?useSSL=false \
-                        --env DB_USERNAME=root \
-                        --env DB_PASSWORD=1234 \
-                        my-app-image
+          docker run --name mysql-container --network my-network -e MYSQL_ROOT_PASSWORD=1234 -e MYSQL_DATABASE=playdb -d mysql:latest
 
       # Aguardar a inicialização do MySQL
       - name: Wait for MySQL to be ready
         run: |
-          for i in {1..60}; do
+          for i in {1..120}; do
             if docker exec mysql-container sh -c 'mysql -u root -p"1234" -e "SELECT 1"' > /dev/null 2>&1; then
               echo "MySQL is ready!"
               break
@@ -69,10 +60,14 @@ jobs:
             sleep 2
           done
 
-      # Mostrar logs da aplicação
-      - name: Show application logs
+      # Executar o contêiner da aplicação na mesma rede
+      - name: Run Docker container
         run: |
-          docker logs app-container
+          docker run -d --name app-container --network my-network --env DB_DRIVER=com.mysql.cj.jdbc.Driver \
+                        --env DB_URL=jdbc:mysql://mysql-container:3306/playdb?useSSL=false \
+                        --env DB_USERNAME=root \
+                        --env DB_PASSWORD=1234 \
+                        my-app-image
 
       # Aguardar a aplicação iniciar e verificar a conexão com o banco de dados
       - name: Wait for application and check DB connection
