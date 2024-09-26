@@ -18,12 +18,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      # Configurar variáveis de ambiente usando secrets do GitHub
-      - name: Set environment variables
-        run: |
-          echo "MY_USERNAME= root" >> $GITHUB_ENV
-          echo "MY_PASSWORD= 1234" >> $GITHUB_ENV
-
       # Build da imagem Docker
       - name: Build Docker image
         run: |
@@ -48,7 +42,7 @@ jobs:
       - name: Run Docker container
         run: |
           docker run -d --name app-container --env DB_DRIVER=com.mysql.cj.jdbc.Driver \
-                        --env DB_URL=jdbc:mysql://host.docker.internal:3306/playdb?useSSL=false \
+                        --env DB_URL=jdbc:mysql://127.0.0.1:3306/playdb?useSSL=false \
                         --env DB_USERNAME=root \
                         --env DB_PASSWORD=1234 \
                         my-app-image
@@ -57,7 +51,7 @@ jobs:
       - name: Wait for application and check DB connection
         run: |
           for i in {1..60}; do
-            if docker exec app-container sh -c 'mysql -h host.docker.internal -u $MY_USERNAME -p"$MY_PASSWORD" -e "SELECT 1"' > /dev/null 2>&1; then
+            if docker exec app-container sh -c 'mysql -h 127.0.0.1 -u root -p"1234" -e "SELECT 1"' > /dev/null 2>&1; then
               echo "Database connected successfully!"
               break
             fi
