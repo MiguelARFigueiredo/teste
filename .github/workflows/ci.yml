@@ -18,39 +18,51 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
+      # Instalar Docker Compose
+      - name: Install Docker Compose
+        run: |
+          sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+          sudo chmod +x /usr/local/bin/docker-compose
+          docker-compose --version
+
       # Configurar variáveis de ambiente usando secrets do GitHub
       - name: Set environment variables
         run: |
           echo "MY_USERNAME=${{ secrets.MY_USERNAME }}" >> $GITHUB_ENV
           echo "MY_PASSWORD=${{ secrets.MY_PASSWORD }}" >> $GITHUB_ENV
 
-      # Criar arquivo .env para Docker Compose
-      - name: Create .env file for Docker Compose
+      # Criar uma rede Docker
+      - name: Create Docker network
         run: |
-          echo "MY_USERNAME=${{ secrets.MY_USERNAME }}" >> .env
-          echo "MY_PASSWORD=${{ secrets.MY_PASSWORD }}" >> .env
+          docker network create my-network
 
-      # Criar uma rede Docker (não necessário com Docker Compose)
-      # - name: Create Docker network
-      #   run: |
-      #     docker network create my-network
-
-      # Build da imagem Docker com Docker Compose
-      - name: Build and start services with Docker Compose
+      # Iniciar o contêiner MySQL com MY_PASSWORD como senha root
+      - name: Start MySQL container
         run: |
-          docker-compose up -d --build
+          docker run --name mysql-container --network my-network -e MYSQL_ROOT_PASSWORD=${{ secrets.MY_PASSWORD }} \
+            -e MYSQL_DATABASE=playdb -d -p 3306:3306 mysql:8.0.28
 
-      # Aguardar o MySQL inicializar (docker-compose já gerencia isso com depends_on)
-      # - name: Wait for MySQL to be ready
-      #   run: |
-      #     for i in {1..60}; do
-      #       if docker exec mysql-container mysql -u root -p${{ secrets.MY_PASSWORD }} -e "SELECT 1" > /dev/null 2>&1; then
-      #         echo "MySQL is ready!"
-      #         break
-      #       fi
-      #       echo "Waiting for MySQL..."
-      #       sleep 1
-      #     done
+      # Aguardar o MySQL inicializar (tentativa de conexão até 60 segundos)
+      - name: Wait for MySQL to be ready
+        run: |
+          for i in {1..60}; do
+            if docker exec mysql-container mysql -u root -p${{ secrets.MY_PASSWORD }} -e "SELECT 1" > /dev/null 2>&1; then
+              echo "MySQL is ready!"
+              break
+            fi
+            echo "Waiting for MySQL..."
+            sleep 1
+          done
+
+      # Build da imagem Docker
+      - name: Build Docker image
+        run: |
+          docker build -t my-app-image .
+
+      # Tag da imagem Docker
+      - name: Tag Docker image
+        run: |
+          docker tag my-app-image ghcr.io/miguelarfigueiredo/teste/my-app-image:latest
 
       # Autenticar no GitHub Container Registry
       - name: Log in to GitHub Container Registry
@@ -60,9 +72,21 @@ jobs:
       # Push da imagem Docker
       - name: Push Docker image
         run: |
-          docker-compose push
+          docker push ghcr.io/miguelarfigueiredo/teste/my-app-image:latest
 
-      # Parar e remover o contêiner MySQL e aplicação após os testes
-      - name: Stop and clean up containers
+      # Executar o container da aplicação com DB_DRIVER e DB_URL diretamente
+      - name: Run Docker container
         run: |
-          docker-compose down
+          docker run --network my-network -d --env DB_DRIVER=com.mysql.cj.jdbc.Driver \
+                        --env DB_URL=jdbc:mysql://127.0.0.1:3306/playdb?useSSL=false \
+                        --env MY_USERNAME=${{ secrets.MY_USERNAME }} \
+                        --env MY_PASSWORD=${{ secrets.MY_PASSWORD }} \
+                        my-app-image
+
+      # Parar e remover o contêiner MySQL após os testes
+      - name: Clean up
+        run: |
+          if [ $(docker ps -q -f name=mysql-container) ]; then
+            docker stop mysql-container
+            docker rm mysql-container
+          fi
