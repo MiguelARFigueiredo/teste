@@ -80,7 +80,7 @@ jobs:
       - name: Run Docker container
         run: |
           docker run --network my-network -d --env DB_DRIVER=com.mysql.cj.jdbc.Driver \
-                        --env DB_URL=jdbc:mysql://mysql-container:3306/playdb?useSSL=false \
+                        --env DB_URL=jdbc:mysql://127.0.0.1:3306/playdb?useSSL=false \
                         --env MY_USERNAME=${{ secrets.MY_USERNAME }} \
                         --env MY_PASSWORD=${{ secrets.MY_PASSWORD }} \
                         my-app-image
