@@ -33,7 +33,7 @@ jobs:
       - name: Start MySQL container
         run: |
           docker run --name mysql-container --network my-network -e MYSQL_ROOT_PASSWORD=${{ secrets.MY_PASSWORD }} \
-            -e MYSQL_DATABASE=playdb -d -p 3306:3307 mysql:8.0.28
+            -e MYSQL_DATABASE=playdb -d -p 3307:3306 mysql:8.0.28
 
       # Verificar se o contêiner MySQL foi criado
       - name: Check MySQL container
@@ -79,11 +79,23 @@ jobs:
       # Executar o container da aplicação com DB_DRIVER e DB_URL diretamente
       - name: Run Docker container
         run: |
-          docker run --network my-network -d --env DB_DRIVER=com.mysql.cj.jdbc.Driver \
-                        --env DB_URL=jdbc:mysql://127.0.0.1:3306/playdb?useSSL=false \
+          docker run --network my-network -d --name app-container --env DB_DRIVER=com.mysql.cj.jdbc.Driver \
+                        --env DB_URL=jdbc:mysql://mysql-container:3306/playdb?useSSL=false \
                         --env MY_USERNAME=${{ secrets.MY_USERNAME }} \
                         --env MY_PASSWORD=${{ secrets.MY_PASSWORD }} \
                         my-app-image
+
+      # Aguardar a aplicação iniciar e verificar conexão com o banco de dados
+      - name: Wait for application and check DB connection
+        run: |
+          for i in {1..60}; do
+            if docker exec app-container sh -c 'mysql -h mysql-container -u root -p"${MY_PASSWORD}" -e "SELECT 1"' > /dev/null 2>&1; then
+              echo "Database connected successfully!"
+              break
+            fi
+            echo "Waiting for database connection..."
+            sleep 1
+          done
 
       # Parar e remover o contêiner MySQL após os testes
       - name: Clean up
@@ -91,6 +103,11 @@ jobs:
           if [ $(docker ps -q -f name=mysql-container) ]; then
             docker stop mysql-container
             docker rm mysql-container
+          fi
+          # Remover o contêiner da aplicação
+          if [ $(docker ps -q -f name=app-container) ]; then
+            docker stop app-container
+            docker rm app-container
           fi
           # Remover a rede Docker
           docker network rm my-network || echo "Network does not exist"
