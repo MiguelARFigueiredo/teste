@@ -24,22 +24,25 @@ jobs:
           echo "MY_USERNAME=${{ secrets.MY_USERNAME }}" >> $GITHUB_ENV
           echo "MY_PASSWORD=${{ secrets.MY_PASSWORD }}" >> $GITHUB_ENV
 
-      # (Opcional) Printar variáveis de ambiente
-      - name: Print environment variables
-        run: |
-          echo "MY_USERNAME=${{ secrets.MY_USERNAME }}"
-          echo "MY_PASSWORD=${{ secrets.MY_PASSWORD }}"
-
       # Criar uma rede Docker
       - name: Create Docker network
         run: |
-          docker network create my-network
+          docker network create my-network || echo "Network already exists"
 
       # Iniciar o contêiner MySQL com MY_PASSWORD como senha root
       - name: Start MySQL container
         run: |
           docker run --name mysql-container --network my-network -e MYSQL_ROOT_PASSWORD=${{ secrets.MY_PASSWORD }} \
             -e MYSQL_DATABASE=playdb -d -p 3306:3306 mysql:8.0.28
+
+      # Verificar se o contêiner MySQL foi criado
+      - name: Check MySQL container
+        run: |
+          if [ $(docker ps -q -f name=mysql-container) ]; then
+            echo "MySQL container is running."
+          else
+            echo "MySQL container is not running." && exit 1
+          fi
 
       # Aguardar o MySQL inicializar (tentativa de conexão até 60 segundos)
       - name: Wait for MySQL to be ready
@@ -89,3 +92,5 @@ jobs:
             docker stop mysql-container
             docker rm mysql-container
           fi
+          # Remover a rede Docker
+          docker network rm my-network || echo "Network does not exist"

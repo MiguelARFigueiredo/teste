@@ -3,7 +3,7 @@ services:
   db:
     image: mysql:8.0
     environment:
-      MYSQL_ROOT_PASSWORD: ${MY_PASSWORD}
+      MYSQL_ROOT_PASSWORD: 1234
       MYSQL_DATABASE: playdb
     ports:
       - "3307:3306"
@@ -11,16 +11,16 @@ services:
       - play-network
 
   play-app:
-    build: .
     image: play-java-app
+    build: .
     ports:
       - "9000:9000"
     environment:
       DB_HOST: db
       DB_PORT: 3306
       DB_NAME: playdb
-      DB_USER: ${MY_USERNAME}
-      DB_PASSWORD: ${MY_PASSWORD}
+      DB_USER: root
+      DB_PASSWORD: 1234
     depends_on:
       - db
     networks:
