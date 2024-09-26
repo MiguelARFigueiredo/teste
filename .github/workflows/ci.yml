@@ -79,12 +79,11 @@ jobs:
       # Executar o container da aplicação com DB_DRIVER e DB_URL diretamente
       - name: Run Docker container
         run: |
-          docker run --network my-network -d --name app-container \
-            --env DB_DRIVER=com.mysql.cj.jdbc.Driver \
-            --env DB_URL=jdbc:mysql://mysql-container:3306/playdb?useSSL=false&allowPublicKeyRetrieval=true \
-            --env DB_USERNAME=${{ secrets.MY_USERNAME }} \
-            --env DB_PASSWORD=${{ secrets.MY_PASSWORD }} \
-            my-app-image
+          docker run --network my-network -d --name app-container --env DB_DRIVER=com.mysql.cj.jdbc.Driver \
+                        --env DB_URL=jdbc:mysql://mysql-container:3306/playdb?useSSL=false \
+                        --env DB_USERNAME=${{ secrets.MY_USERNAME }} \
+                        --env DB_PASSWORD=${{ secrets.MY_PASSWORD }} \
+                        my-app-image
 
       # Aguardar a aplicação iniciar e verificar conexão com o banco de dados
       - name: Wait for application and check DB connection
@@ -97,12 +96,6 @@ jobs:
             echo "Waiting for database connection..."
             sleep 1
           done
-          # Se a conexão falhar, exibir logs da aplicação
-          if [ $? -ne 0 ]; then
-            echo "Failed to connect to the database. Checking application logs:"
-            docker logs app-container || echo "No logs available for app-container"
-            exit 1
-          fi
 
       # Parar e remover o contêiner MySQL após os testes
       - name: Clean up
