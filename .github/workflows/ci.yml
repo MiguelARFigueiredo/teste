@@ -43,6 +43,11 @@ jobs:
         run: |
           docker run --name mysql-container -e MYSQL_ROOT_PASSWORD=1234 -e MYSQL_DATABASE=playdb -p 3307:3306 -d mysql:latest
 
+      # Testar conexão MySQL
+      - name: Test MySQL connection
+        run: |
+          docker exec mysql-container sh -c 'mysql -u root -p"1234" -e "SELECT 1"'
+
       # Executar o contêiner da aplicação
       - name: Run Docker container
         run: |
@@ -61,8 +66,13 @@ jobs:
               break
             fi
             echo "Waiting for MySQL..."
-            sleep 1
+            sleep 2
           done
+
+      # Mostrar logs da aplicação
+      - name: Show application logs
+        run: |
+          docker logs app-container
 
       # Aguardar a aplicação iniciar e verificar a conexão com o banco de dados
       - name: Wait for application and check DB connection
@@ -73,5 +83,5 @@ jobs:
               break
             fi
             echo "Waiting for database connection..."
-            sleep 1
+            sleep 2
           done
