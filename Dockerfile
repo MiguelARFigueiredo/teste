@@ -39,11 +39,5 @@ RUN sbt clean compile stage
 ENV EXECUTABLE_DIR=/play-java-hello-world-tutorial-2.6.x/target/universal/stage/bin
 ENV EXECUTABLE_FILE=play-java-hello-world-tutorial-2-6-x
 
-# Defina as variáveis de ambiente para a conexão com o banco de dados
-ENV DB_DRIVER=com.mysql.cj.jdbc.Driver
-ENV DB_URL="jdbc:mysql://127.0.0.1:3306/playdb?useSSL=false"
-ENV DB_USERNAME=${MY_USERNAME}
-ENV DB_PASSWORD=${MY_PASSWORD}
-
 # Comando para iniciar a aplicação e garantir a remoção do RUNNING_PID
-CMD ["sh", "-c", "rm -f /play-java-hello-world-tutorial-2.6.x/target/universal/stage/RUNNING_PID && $EXECUTABLE_DIR/$EXECUTABLE_FILE"]
+CMD ["sh", "-c", "rm -f /play-java-hello-world-tutorial-2.6.x/target/universal/stage/RUNNING_PID && exec $EXECUTABLE_DIR/$EXECUTABLE_FILE"]
