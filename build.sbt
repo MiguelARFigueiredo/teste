@@ -8,8 +8,8 @@ scalaVersion := "2.12.15"
 
 libraryDependencies ++= Seq(
   guice,
-  "com.typesafe.play" %% "play-guice" % "2.6.25",
-  "mysql" % "mysql-connector-java" % "8.0.28"
+  "com.typesafe.play" %% "play-guice" % "2.6.25"
+  //"mysql" % "mysql-connector-java" % "8.0.28"
 )
 
 resolvers += Resolver.sonatypeRepo("public")
