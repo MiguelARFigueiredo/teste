@@ -22,7 +22,7 @@ RUN mkdir -p /usr/share/sbt \
 # Adicione SBT e Scala ao PATH
 ENV PATH="/usr/share/scala/bin:/usr/share/sbt/bin:${PATH}"
 
-# Confirme a instalação
+# Confirme a instalaçãooo
 RUN scala -version \
     && sbt sbtVersion
 
