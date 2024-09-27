@@ -23,7 +23,7 @@ jobs:
         run: |
           docker build -t my-app-image .
 
-      # Tag da imagem Docker
+      # Tag da imagem Docker com o GitHub Container Registry
       - name: Tag Docker image
         run: |
           docker tag my-app-image ghcr.io/miguelarfigueiredo/teste/my-app-image:latest
@@ -33,12 +33,7 @@ jobs:
         run: |
           echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
-      # Push da imagem Docker
+      # Push da imagem Docker para o GitHub Container Registry
       - name: Push Docker image
         run: |
           docker push ghcr.io/miguelarfigueiredo/teste/my-app-image:latest
-
-      # Executar o contêiner da aplicação
-      - name: Run Docker container
-        run: |
-          docker run -d --name app-container my-app-image
