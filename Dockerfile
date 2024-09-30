@@ -11,3 +11,20 @@ RUN apt-get update && apt-get install -y \
     unzip \
     && rm -rf /var/lib/apt/lists/*
 
+# Baixe e instale o Scala
+RUN mkdir -p /usr/share/scala \
+    && curl -fsL "https://downloads.typesafe.com/scala/$SCALA_VERSION/scala-$SCALA_VERSION.tgz" | tar -xz -C /usr/share/scala --strip-components=1
+
+# Baixe e instale o SBT
+RUN mkdir -p /usr/share/sbt \
+    && curl -fsL "https://github.com/sbt/sbt/releases/download/v$SBT_VERSION/sbt-$SBT_VERSION.tgz" | tar -xz -C /usr/share/sbt --strip-components=1
+
+# Adicione SBT e Scala ao PATH
+ENV PATH="/usr/share/scala/bin:/usr/share/sbt/bin:${PATH}"
+
+# Confirme a instalação
+RUN scala -version \
+    && sbt sbtVersion
+
+# Comando para manter o container ativo
+CMD ["tail", "-f", "/dev/null"]
