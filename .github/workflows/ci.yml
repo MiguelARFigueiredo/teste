@@ -23,7 +23,7 @@ jobs:
         run: |
           docker build -t my-app-image .
 
-      # Tag da imagem Docker com o GitHub Container Registry
+      # Tag da imagem Docker
       - name: Tag Docker image
         run: |
           docker tag my-app-image ghcr.io/miguelarfigueiredo/teste/my-app-image:latest
@@ -33,7 +33,50 @@ jobs:
         run: |
           echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
-      # Push da imagem Docker para o GitHub Container Registry
+      # Push da imagem Docker
       - name: Push Docker image
         run: |
           docker push ghcr.io/miguelarfigueiredo/teste/my-app-image:latest
+
+      # Criar uma rede do Docker
+      - name: Create Docker network
+        run: |
+          docker network create my-network || echo "Network already exists"
+
+      # Executar o contêiner do MySQL na rede criada
+      - name: Run MySQL container
+        run: |
+          docker run --name mysql-container --network my-network -e MYSQL_ROOT_PASSWORD=1234 -e MYSQL_DATABASE=playdb -d mysql:latest
+
+      # Aguardar a inicialização do MySQL
+      - name: Wait for MySQL to be ready
+        run: |
+          for i in {1..120}; do
+            if docker exec mysql-container sh -c 'mysql -u root -p"1234" -e "SELECT 1"' > /dev/null 2>&1; then
+              echo "MySQL is ready!"
+              break
+            fi
+            echo "Waiting for MySQL..."
+            sleep 2
+          done
+
+      # Executar o contêiner da aplicação na mesma rede
+      - name: Run Docker container
+        run: |
+          docker run -d --name app-container --network my-network --env DB_DRIVER=com.mysql.cj.jdbc.Driver \
+                        --env DB_URL=jdbc:mysql://mysql-container:3306/playdb?useSSL=false \
+                        --env DB_USERNAME=root \
+                        --env DB_PASSWORD=1234 \
+                        my-app-image
+
+      # Aguardar a aplicação iniciar e verificar a conexão com o banco de dados
+      - name: Wait for application and check DB connection
+        run: |
+          for i in {1..60}; do
+            if docker exec app-container sh -c 'mysql -h mysql-container -u root -p"1234" -e "SELECT 1"' > /dev/null 2>&1; then
+              echo "Database connected successfully!"
+              break
+            fi
+            echo "Waiting for database connection..."
+            sleep 2
+          done
