@@ -4,10 +4,21 @@ on:
   push:
     branches:
       - main
+      - 'develop'
       - 'feature/*'
   pull_request:
     branches:
       - main
+  workflow_dispatch:  # Permite acionamento manual
+    inputs:
+      environment:
+        description: 'Escolha o ambiente para implantação'
+        required: true
+        default: 'dev'
+        type: choice
+        options:
+          - dev
+          - prod
 
 jobs:
   build:
